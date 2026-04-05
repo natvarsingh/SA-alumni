@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team SA Directory - Live</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { margin: 0; background-color: #f4f7f6; }
+        header { background: #003366; color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 100; }
+        .search-container { padding: 20px; text-align: center; background: white; border-bottom: 1px solid #ddd; }
+        #searchBox { width: 90%; max-width: 500px; padding: 12px; border: 2px solid #003366; border-radius: 25px; outline: none; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
+        .card { background: white; padding: 15px; border-radius: 8px; border-left: 5px solid #003366; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card h4 { margin: 0 0 10px 0; color: #003366; text-transform: uppercase; border-bottom: 1px solid #eee; padding-bottom: 5px; }
+        .card p { margin: 5px 0; font-size: 14px; }
+        .label { font-weight: bold; color: #666; width: 120px; display: inline-block; }
+        .loading { text-align: center; padding: 50px; font-size: 1.2rem; color: #003366; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>SA DIRECTORY (LIVE)</h1>
+</header>
+
+<div class="search-container">
+    <input type="text" id="searchBox" placeholder="Search Name, District or Location..." onkeyup="searchData()">
+</div>
+
+<div id="loader" class="loading">Fetching data from server...</div>
+<div class="grid" id="dataGrid"></div>
+
+<script>
+    let masterData = [];
+
+    // GitHub Pages par rakhi data.json file se data fetch karna
+    async function fetchLiveSheet() {
+        try {
+            // '.' ka matlab hai usi folder mein search kare jahan index.html hai
+            const response = await fetch('./data.json'); 
+            masterData = await response.json();
+            document.getElementById('loader').style.display = 'none';
+            displayCards(masterData);
+        } catch (error) {
+            document.getElementById('loader').innerHTML = "<b style='color:red;'>Error: data.json file nahi mili!</b>";
+            console.error(error);
+        }
+    }
+
+    function displayCards(data) {
+        const grid = document.getElementById('dataGrid');
+        grid.innerHTML = '';
+        data.forEach(item => {
+            grid.innerHTML += `
+                <div class="card">
+                    <h4>${item['Name of SA']}</h4>
+                    <p><span class="label">District:</span> ${item['District']}</p>
+                    <p><span class="label">Post:</span> ${item['Designation']}</p>
+                    <p><span class="label">Type:</span> ${item['Type']}</p>
+                    <p><span class="label">Mobile:</span> <a href="tel:${item['Mobile']}">${item['Mobile']}</a></p>
+                    <p><span class="label">Location:</span> ${item['Current Posting Location']}</p>
+                    <p><span class="label">Email:</span> ${item['Personal Email ID']}</p>
+                </div>
+            `;
+        });
+    }
+
+    function searchData() {
+        const term = document.getElementById('searchBox').value.toLowerCase();
+        const filtered = masterData.filter(item => 
+            item['Name of SA'].toLowerCase().includes(term) || 
+            item['District'].toLowerCase().includes(term) ||
+            item['Current Posting Location'].toLowerCase().includes(term)
+        );
+        displayCards(filtered);
+    }
+
+    fetchLiveSheet();
+</script>
+
+</body>
+</html>
